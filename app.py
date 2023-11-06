@@ -4,54 +4,47 @@ import cv2
 import easyocr
 import re
 import numpy as np
+from PIL import Image
+from typing import Dict
 
 
-def preprocess_image_for_ocr(img_path) -> None:
-    # Load image from path
+def preprocess_image_for_ocr(img_path) -> Image:
     image = cv2.imread(img_path)
 
-    # Image enhancement and noise reduction (add these steps)
-
-    # Set trained model path from repo
     model_path = os.path.join(".", "runs", "detect", "train2", "weights", "best.pt")
-
-    # Load trained model with YOLO
     model = YOLO(model_path)
 
-    # Find all detected license plates from image
     detections = model(image)[0]
 
-    # Loop all detections and convert image to gray, return crooped and gray license plate after filter
     for detection in detections.boxes.data.tolist():
         x1, y1, x2, y2, score, class_id = detection
         cropped_plate = image[int(y1) : int(y2), int(x1) : int(x2)]
         gray_plate = cv2.cvtColor(cropped_plate, cv2.COLOR_BGR2GRAY)
         gray_plate = cv2.bilateralFilter(gray_plate, 11, 17, 17)
-
     return gray_plate
 
 
-def enhance_image_contrast(image):
+def enhance_image_contrast(image) -> Image:
     alpha = 1.5
     beta = 0
     enhanced_image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
     return enhanced_image
 
 
-def enhance_image_brightness(image):
+def enhance_image_brightness(image) -> Image:
     alpha = 1.0
     beta = 50
     enhanced_image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
     return enhanced_image
 
 
-def enhance_image_sharpening(image):
+def enhance_image_sharpening(image) -> Image:
     kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
     enhanced_image = cv2.filter2D(image, -1, kernel)
     return enhanced_image
 
 
-def detect_on_img(image) -> None:
+def process_image_with_ocr(image) -> Dict:
     thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
     reader = easyocr.Reader(["en"], gpu=False)
@@ -73,11 +66,16 @@ def detect_on_img(image) -> None:
     return result
 
 
-image_path = "images/image9.jpg"
-image = preprocess_image_for_ocr(image_path)
-image = enhance_image_contrast(image)
-image = enhance_image_brightness(image)
-image = enhance_image_sharpening(image)
+def detect_on_img(img_path: os.path) -> Dict:
+    image = preprocess_image_for_ocr(img_path)
+    image = enhance_image_contrast(image)
+    image = enhance_image_brightness(image)
+    image = enhance_image_sharpening(image)
+    result = process_image_with_ocr(image)
+    return result
 
-text = detect_on_img(image)
+
+image_path = "images/image9.jpg"
+
+text = detect_on_img(image_path)
 print(text)
