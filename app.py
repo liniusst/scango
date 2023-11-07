@@ -3,10 +3,7 @@ import os
 import cv2
 import easyocr
 import re
-import numpy as np
-from PIL import Image
 from typing import Dict
-import matplotlib.pyplot as plt
 
 
 def detect_on_img(img_path: os.path) -> Dict:
@@ -32,6 +29,7 @@ def detect_on_img(img_path: os.path) -> Dict:
     for out in output:
         text_bbox, text, text_score = out
         if text_score > 0.25:
+            text = re.sub(r"[^A-Z0-9]", "", text)
             license_plate_list.append(text)
 
     license_plate = "".join(license_plate_list)
