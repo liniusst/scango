@@ -4,7 +4,9 @@ import cv2
 import easyocr
 import re
 import numpy as np
+import torch
 
+torch.device("cpu")
 model_path = os.path.join(".", "runs", "detect", "train3", "weights", "best.pt")
 model = YOLO(model_path)
 
@@ -14,15 +16,26 @@ class detect_license_plate:
         self.img_path = img_path
         self.result = None
 
-    def _img_to_tresh(self):
+    def _read_image(self):
         try:
             cap = cv2.VideoCapture(self.img_path)
             ret, image = cap.read()
             cap.release()
             if not ret:
                 print("Error reading image.")
-                return
+                return None
+            return image
+        except Exception as e:
+            print(f"Error during image reading: {e}")
+            return None
 
+    def _img_to_tresh(self):
+        image = self._read_image()
+        if image is None:
+            self.img_tresh = []
+            return
+
+        try:
             detections = model(image)[0]
             self.img_tresh = [
                 cv2.threshold(
@@ -35,7 +48,6 @@ class detect_license_plate:
                 )[1]
                 for x1, y1, x2, y2, _, _ in detections.boxes.data.tolist()
             ]
-
         except Exception as e:
             print(f"Error during image processing: {e}")
             self.img_tresh = []
@@ -67,7 +79,7 @@ class detect_license_plate:
             license_plate_list = [
                 re.sub(r"[^A-Z0-9]", "", text)
                 for _, text, text_score in output
-                if text_score > 0.7
+                if text_score > 0.25
             ]
         except Exception as e:
             print(f"Error during text processing: {e}")
