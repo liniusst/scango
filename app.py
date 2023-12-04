@@ -57,7 +57,7 @@ class detect_license_plate:
             return []
 
         try:
-            reader = easyocr.Reader(["en"], gpu=False)
+            reader = easyocr.Reader(["en"], gpu=False, verbose=False)
             cnts, _ = cv2.findContours(
                 np.vstack(self.img_tresh).astype(np.uint8),
                 cv2.RETR_EXTERNAL,
