@@ -92,7 +92,7 @@ class detect_license_plate:
 
 # Usage
 try:
-    image_path = "images/car6.jpeg"
+    image_path = "images/car5.jpeg"
     detection = detect_license_plate(image_path)
     result = detection.return_txt()
     print(result)
