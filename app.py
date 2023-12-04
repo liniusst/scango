@@ -57,7 +57,7 @@ class detect_license_plate:
             return []
 
         try:
-            reader = easyocr.Reader(["en"], gpu=False)
+            reader = easyocr.Reader(["en"], gpu=False, verbose=False)
             cnts, _ = cv2.findContours(
                 np.vstack(self.img_tresh).astype(np.uint8),
                 cv2.RETR_EXTERNAL,
@@ -92,7 +92,7 @@ class detect_license_plate:
 
 # Usage
 try:
-    image_path = "images/car6.jpeg"
+    image_path = "images/car5.jpeg"
     detection = detect_license_plate(image_path)
     result = detection.return_txt()
     print(result)
