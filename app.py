@@ -37,8 +37,13 @@ class detect_license_plate:
 
         region_of_interest = image[int(y1) : int(y2), int(x1) : int(x2)]
         gray_image = cv2.cvtColor(region_of_interest, cv2.COLOR_BGR2GRAY)
-        bfilter = cv2.bilateralFilter(gray_image, 11, 17, 17)
-        _, thresholded = cv2.threshold(gray_image, 64, 255, cv2.THRESH_BINARY_INV)
+        enhanced_image = cv2.convertScaleAbs(gray_image, alpha=1.5, beta=0)
+        # enhance = self._img_enhance(region_of_interest)
+
+        # _, thresholded = cv2.threshold(gray_image, 64, 255, cv2.THRESH_BINARY_INV)
+        _, tresh = cv2.threshold(
+            gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+        )
 
         plt.subplot(2, 2, 1)
         plt.imshow(cv2.cvtColor(region_of_interest, cv2.COLOR_BGR2RGB))
@@ -49,18 +54,23 @@ class detect_license_plate:
         plt.title("Gray Image")
 
         plt.subplot(1, 2, 1)
-        plt.imshow(bfilter)
+        plt.imshow(enhanced_image)
         plt.title("Gray after filter Image")
 
         plt.subplot(1, 2, 2)
-        plt.imshow(thresholded)
+        plt.imshow(tresh)
         plt.title("Thresholded Image")
 
         plt.show()
 
-        return thresholded
+        return tresh
 
     # ideti filtra
+
+    def _img_enhance(self, img_cnts):
+        gray_image = cv2.cvtColor(img_cnts, cv2.COLOR_BGR2GRAY)
+        enhanced_image = cv2.convertScaleAbs(gray_image, alpha=1.5, beta=0)
+        return enhanced_image
 
     def img_cnts(self):
         cnts, _ = cv2.findContours(
@@ -90,7 +100,7 @@ class detect_license_plate:
         )
 
 
-image_path = "images/autogidas2.jpg"
+image_path = "images/car5.jpeg"
 detection = detect_license_plate(image_path)
 result = detection.return_txt()
 
